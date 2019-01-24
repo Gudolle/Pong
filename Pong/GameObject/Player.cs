@@ -22,9 +22,9 @@ namespace Pong.GameObject
             Position.Deconstruct(out x,out y);
 
             if (state.IsKeyDown(Keys.Up))
-                y--;
+                y-=5;
             if (state.IsKeyDown(Keys.Down))
-               y++;
+               y+=5;
 
             Position = new Vector2(x, y);
         }

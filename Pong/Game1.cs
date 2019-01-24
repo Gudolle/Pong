@@ -55,6 +55,7 @@ namespace Pong
             Thread MaLatence = new Thread(new ThreadStart(DrawPing));
             MaLatence.Start();
 
+
         }
         
         /// <summary>
