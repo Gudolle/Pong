@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,19 @@ namespace Pong.GameObject
             Position = Pos;
         }
 
+        public void Move(KeyboardState state)
+        {
+            float x;
+            float y;
+            Position.Deconstruct(out x,out y);
 
+            if (state.IsKeyDown(Keys.Up))
+                y--;
+            if (state.IsKeyDown(Keys.Down))
+               y++;
+
+            Position = new Vector2(x, y);
+        }
    
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Pong.Communication;
 using Pong.GameObject;
+using System.Threading;
 
 namespace Pong
 {
@@ -16,6 +17,8 @@ namespace Pong
         public Player Joueur1 { get; set; }
         public Player Joueur2 { get; set; }
         public Balle Ball { get; set; }
+        public int Latence { get; set; }
+
         public int WidthEcart = 10;
         public bool IsReady = false;
 
@@ -47,6 +50,11 @@ namespace Pong
             // TODO: Add your initialization logic here
             Joueur1 = new Player(new Vector2(WidthEcart, (HEIGHT / 2 -30)));
             base.Initialize();
+
+
+            Thread MaLatence = new Thread(new ThreadStart(DrawPing));
+            MaLatence.Start();
+
         }
 
         /// <summary>
@@ -84,8 +92,10 @@ namespace Pong
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+
             // TODO: Add your update logic here
             Joueur1.SetColor(Color.White);
+            Joueur1.Move(Keyboard.GetState());
             base.Update(gameTime);
         }
 
@@ -95,13 +105,24 @@ namespace Pong
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            
             GraphicsDevice.Clear(Color.Black);
             Joueur1.Draw(spriteBatch);
-            int Latence = Request.GetPing();
             Basique.DrawLatence(spriteBatch, Latence, font, fontOrigin);
+
+
+
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
+        }
+
+        public void DrawPing()
+        {
+            while (true)
+            {
+                Latence = Request.GetPing();
+            }
         }
     }
 }
