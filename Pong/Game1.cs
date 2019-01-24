@@ -49,6 +49,7 @@ namespace Pong
         {
             // TODO: Add your initialization logic here
             Joueur1 = new Player(new Vector2(WidthEcart, (HEIGHT / 2 -30)));
+            Ball = new Balle(HEIGHT, WIDTH);
             base.Initialize();
 
 
@@ -66,6 +67,9 @@ namespace Pong
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Joueur1.Texture = new Texture2D(graphics.GraphicsDevice, 10, 60);
+            Joueur1.SetColor(Color.White);
+            Ball.Texture = new Texture2D(graphics.GraphicsDevice, 15, 15);
+            Ball.SetColor(Color.White);
 
 
 
@@ -94,7 +98,6 @@ namespace Pong
 
 
             // TODO: Add your update logic here
-            Joueur1.SetColor(Color.White);
             Joueur1.Move(Keyboard.GetState());
             base.Update(gameTime);
         }
@@ -108,9 +111,13 @@ namespace Pong
             
             GraphicsDevice.Clear(Color.Black);
             Joueur1.Draw(spriteBatch);
+            Ball.Draw(spriteBatch);
             Basique.DrawLatence(spriteBatch, Latence, font, fontOrigin);
 
-
+            if (!IsReady)
+            {
+                Basique.DrawMessage(spriteBatch, font, fontOrigin, gameTime);
+            }
 
             // TODO: Add your drawing code here
 
