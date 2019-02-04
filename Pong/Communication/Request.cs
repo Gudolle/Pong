@@ -15,21 +15,15 @@ namespace Pong.Communication
 {
     public class Request
     {
-        private int Key = 262166;
-        public string KeyJ2 { get; set; }
+        private int KeyJ1 = 262166;
+        private int KeyJ2 = 262168;
+        
         private object DataAEnvoyer;
         
         private string Host = "syllab.com";
-        private Socket s { get; set; }
 
         private string BaseUri = "http://syllab.com/PTRE839";
         
-
-        public Request()
-        {
-            s = ConnectionSocket();
-            KeyJ2 = "262166";
-        }
 
         public int GetPing()
         {
@@ -71,10 +65,10 @@ namespace Pong.Communication
                 else
                     MonObject = JsonConvert.DeserializeObject<Data>(chaine);
             }
-            else if (MonJson.Contains("TimeOut"))
-                return new RetourRequete();
+            else if (MonJson.Contains("TimeOut") || MonJson.Contains("500 Server error") || MonJson.Contains("504 Gateway Timeout"))
+                return new RetourRequete(MonJson);
 
-            return new RetourRequete(MonObject);
+            return new RetourRequete(MonObject, MonJson);
         }
 
         
@@ -123,19 +117,18 @@ namespace Pong.Communication
             {
                 case TypeRequete.Ping:
                     requete = "GET /PTRE839/pings?k=262166&t0=" + GetUnixNow();
-                    //request.Method = HttpMethod.Get;
                     break;
                 case TypeRequete.RequestMessage:
-                    requete = "GET /PTRE839/msgs?k=262166&timeout=5";
-                  //  request.Method = HttpMethod.Get;
+                    requete = "GET /PTRE839/msgs?k="+ GetKey() + "&timeout=5";
                     break;
                 case TypeRequete.SendMessage:
-                    requete = "POST /PTRE839/msgs?k=262166&to=262166&data=" + RetourneJsonMessage(DataAEnvoyer);
-                    //request.Method = HttpMethod.Post;
+                    requete = "POST /PTRE839/msgs?k="+ GetKey() + "&to="+ GetKeyJ2() + "&data=" + RetourneJsonMessage(DataAEnvoyer);
                     break;
                 case TypeRequete.clear:
-                    requete = "DELETE /PTRE839/players/262166?k=262166";
-                    //request.Method = HttpMethod.Delete;
+                    requete = "DELETE /PTRE839/players/"+ GetKey() + "?k=262166";
+                    break;
+                case TypeRequete.clearAutre:
+                    requete = "DELETE /PTRE839/players/" + GetKeyJ2() + "?k=262166";
                     break;
                 default:
                     requete = "ERROR";
@@ -146,6 +139,22 @@ namespace Pong.Communication
             return requete;
         }
 
+        private string GetKey()
+        {
+            if (Game1.joueur == Joueur.Joueur1)
+            {
+                return KeyJ1.ToString();
+            }
+            return KeyJ2.ToString();
+        }
+        private string GetKeyJ2()
+        {
+            if (Game1.joueur == Joueur.Joueur1)
+            {
+                return KeyJ2.ToString();
+            }
+            return KeyJ1.ToString();
+        }
 
         private Socket ConnectionSocket()
         {
@@ -182,6 +191,8 @@ namespace Pong.Communication
         Ping,
         SendMessage,
         RequestMessage,
-        clear
+        clear,
+        clearAutre,
+        Start
     }
 }

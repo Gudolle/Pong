@@ -11,11 +11,15 @@ namespace Pong.Model
         public bool IsConnected { get; set; }
         public Data Data { get; set; }
         public Ping Ping { get; set; }
+        public string page { get; set; }
+        public Joueur joueur { get; set; }
 
 
-        public RetourRequete(object MonObjet)
+        public RetourRequete(object MonObjet, string _page)
         {
+            joueur = Game1.joueur;
             IsConnected = true;
+            page = _page;
             if (MonObjet != null)
             {
                 if (MonObjet.GetType().Name == "Data")
@@ -28,8 +32,10 @@ namespace Pong.Model
                 }
             }
         }
-        public RetourRequete()
+        public RetourRequete(string _page)
         {
+            joueur = Game1.joueur;
+            page = _page;
             IsConnected = false;
         }
     }

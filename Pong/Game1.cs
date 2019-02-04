@@ -13,6 +13,11 @@ namespace Pong
     /// </summary>
     public class Game1 : Game
     {
+        public static Joueur joueur;
+        public static TypeParty Party = TypeParty.None;
+
+
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         public Player Joueur1 { get; set; }
@@ -20,12 +25,12 @@ namespace Pong
         public Balle Ball { get; set; }
         public int Latence { get; set; }
 
-        public string Text { get; set; }
-        public int WidthEcart = 10;
+        public static string Text = "Appuyez sur C pour creer ou J pour rejoindre la partie";
+        public static Thread CreationParty;
         public bool IsReady = false;
 
-        public int WIDTH = 960;
-        public int HEIGHT = 672;
+        public static int WIDTH = 960;
+        public static int HEIGHT = 672;
         public Vector2 fontOrigin = new Vector2(0, 0);
 
         public GameObject.GameObject Basique = new GameObject.GameObject();
@@ -51,15 +56,15 @@ namespace Pong
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            Joueur1 = new Player(new Vector2(WidthEcart, (HEIGHT / 2 -30)));
+            Joueur1 = new Player();
             Ball = new Balle(HEIGHT, WIDTH);
             base.Initialize();
 
 
             Thread MaLatence = new Thread(new ThreadStart(DrawPing));
             MaLatence.Start();
-            Thread Player = new Thread(new ThreadStart(IsFirstPlayer));
-            Player.Start();
+            CreationParty = new Thread(new ThreadStart(IsFirstPlayer));
+            
 
         }
         
@@ -104,6 +109,10 @@ namespace Pong
 
             // TODO: Add your update logic here
             Joueur1.Move(Keyboard.GetState());
+
+            if (Party == TypeParty.None)
+                Joueur1.CreateOrRejoindParty(Keyboard.GetState());
+
             base.Update(gameTime);
         }
 
@@ -134,25 +143,50 @@ namespace Pong
             while (true)
             {
                 Request MonPing = new Request();
-               // Latence = MonPing.GetPing();
+                Latence = MonPing.GetPing();
                 Thread.Sleep(1000);
             }
         }
         public void IsFirstPlayer()
         {
-            //MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connected" });
-            RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
-            if (!result.IsConnected)
+
+            RetourRequete result = new RetourRequete(string.Empty);
+            switch (joueur)
             {
-                MesRequete.SocketSendReceive(TypeRequete.clear);
-                MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connected" });
-                Text = "En cours";
+                case Joueur.Joueur1:
+                    MesRequete.SocketSendReceive(TypeRequete.clear);
+                    while (!result.IsConnected)
+                    {
+                        MesRequete.SocketSendReceive(TypeRequete.clearAutre);
+                        result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
+                        MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_1" });
+                    }
+                    Text = "Joueur 1 : Pret";
+                    break;
+                case Joueur.Joueur2:
+                    MesRequete.SocketSendReceive(TypeRequete.clear);
+                    while (!result.IsConnected)
+                    {
+                        MesRequete.SocketSendReceive(TypeRequete.clearAutre);
+                        result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
+                        MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_2" });
+                    }
+                    Text = "Joueur 2 : Pret";
+                    break;
             }
-            else
-                Text = "Est connecte a : " +result.Data.from;
-            //if (MesRequete.IsFirstPlayer())
-            //{
-            //}
+            
         }
+    }
+
+    public enum Joueur
+    {
+        Joueur1,
+        Joueur2
+    }
+    public enum TypeParty
+    {
+        Create,
+        Joins,
+        None
     }
 }

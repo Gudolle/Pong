@@ -35,16 +35,15 @@ namespace Pong.GameObject
         public void DrawMessage(SpriteBatch spriteBatch, SpriteFont font, Vector2 fontOrigin, GameTime time, string Text)
         {
             string text = "En attende d'un autre joueur.";
-            if (String.IsNullOrEmpty(Text))
+            if (!String.IsNullOrEmpty(Text))
             {
+                text = Text;
+            }
+
                 for (int x = 0; x < i; x++)
                 {
                     text += ".";
                 }
-            }
-            else
-                text = Text;
-
 
             spriteBatch.Begin();
             
