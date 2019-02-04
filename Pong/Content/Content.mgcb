@@ -14,9 +14,7 @@
 #---------------------------------- Content ---------------------------------#
 
 #begin Font/File.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
-/processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
+/importer:
+/processor:
 /build:Font/File.spritefont
 

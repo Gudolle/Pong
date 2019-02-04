@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Pong.Communication;
 using Pong.GameObject;
+using Pong.Model;
 using System.Threading;
 
 namespace Pong
@@ -28,6 +29,7 @@ namespace Pong
 
         public GameObject.GameObject Basique = new GameObject.GameObject();
 
+        public Request MesRequete = new Request();
 
         public SpriteFont font;
 
@@ -55,7 +57,8 @@ namespace Pong
 
             Thread MaLatence = new Thread(new ThreadStart(DrawPing));
             MaLatence.Start();
-
+            Thread Player = new Thread(new ThreadStart(IsFirstPlayer));
+            Player.Start();
 
         }
         
@@ -129,8 +132,19 @@ namespace Pong
         {
             while (true)
             {
-                Latence = Request.GetPing();
+                Request MonPing = new Request();
+                Latence = MonPing.GetPing();
+                Thread.Sleep(1000);
             }
+        }
+        public void IsFirstPlayer()
+        {
+            MesRequete.SocketSendReceive(TypeRequete.clear);
+            RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
+           // MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connected"});
+            //if (MesRequete.IsFirstPlayer())
+            //{
+            //}
         }
     }
 }

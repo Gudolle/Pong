@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Pong.Model
 {
-    class Ping
+    public class Ping
     {
         public double t0 { get; set; }
         public double t1 { get; set; }
@@ -16,7 +16,7 @@ namespace Pong.Model
 
         public int RetourneLatence()
         {
-            return (int)(((t1 - t0) + (t2 - t3)) / 2);
+            return (int)(((t1 - t0) + (t3 - t2)) / 2);
         }
     }
 }

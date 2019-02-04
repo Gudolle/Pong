@@ -41,6 +41,7 @@ namespace Pong.GameObject
 
 
             spriteBatch.Begin();
+            
             spriteBatch.DrawString(
                 font, text,
                 new Vector2(200, 200),
