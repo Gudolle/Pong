@@ -49,6 +49,7 @@
     <Compile Include="Model\Data.cs" />
     <Compile Include="Model\Ping.cs" />
     <Compile Include="Model\RetourRequete.cs" />
+    <Compile Include="Model\WriteExceptionError.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

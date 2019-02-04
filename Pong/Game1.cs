@@ -20,6 +20,7 @@ namespace Pong
         public Balle Ball { get; set; }
         public int Latence { get; set; }
 
+        public string Text { get; set; }
         public int WidthEcart = 10;
         public bool IsReady = false;
 
@@ -120,7 +121,7 @@ namespace Pong
 
             if (!IsReady)
             {
-                Basique.DrawMessage(spriteBatch, font, fontOrigin, gameTime);
+                Basique.DrawMessage(spriteBatch, font, fontOrigin, gameTime, Text);
             }
 
             // TODO: Add your drawing code here
@@ -133,15 +134,22 @@ namespace Pong
             while (true)
             {
                 Request MonPing = new Request();
-                Latence = MonPing.GetPing();
+               // Latence = MonPing.GetPing();
                 Thread.Sleep(1000);
             }
         }
         public void IsFirstPlayer()
         {
-            MesRequete.SocketSendReceive(TypeRequete.clear);
+            //MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connected" });
             RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
-           // MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connected"});
+            if (!result.IsConnected)
+            {
+                MesRequete.SocketSendReceive(TypeRequete.clear);
+                MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connected" });
+                Text = "En cours";
+            }
+            else
+                Text = "Est connecte a : " +result.Data.from;
             //if (MesRequete.IsFirstPlayer())
             //{
             //}

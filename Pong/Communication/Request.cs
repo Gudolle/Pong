@@ -16,6 +16,7 @@ namespace Pong.Communication
     public class Request
     {
         private int Key = 262166;
+        public string KeyJ2 { get; set; }
         private object DataAEnvoyer;
         
         private string Host = "syllab.com";
@@ -27,6 +28,7 @@ namespace Pong.Communication
         public Request()
         {
             s = ConnectionSocket();
+            KeyJ2 = "262166";
         }
 
         public int GetPing()
@@ -69,6 +71,8 @@ namespace Pong.Communication
                 else
                     MonObject = JsonConvert.DeserializeObject<Data>(chaine);
             }
+            else if (MonJson.Contains("TimeOut"))
+                return new RetourRequete();
 
             return new RetourRequete(MonObject);
         }
@@ -81,7 +85,7 @@ namespace Pong.Communication
             string page = "";
             using (Socket s = ConnectionSocket())
             {
-               
+                s.ReceiveTimeout = 5000;
                 s.NoDelay = true;
                 s.ReceiveBufferSize = 16384;
                 s.SendBufferSize = 16384;
@@ -93,9 +97,16 @@ namespace Pong.Communication
                 page = "Default HTML page on " + Host + ":\r\n";
                 // The following will block until the page is transmitted.
 
-
-                bytes = s.Receive(bytesReceived, bytesReceived.Length, SocketFlags.None);
-                page = page + Encoding.ASCII.GetString(bytesReceived, 0, bytes);
+                try
+                {
+                    bytes = s.Receive(bytesReceived, bytesReceived.Length, SocketFlags.None);
+                    page = page + Encoding.ASCII.GetString(bytesReceived, 0, bytes);
+                }
+                catch(Exception ex)
+                {
+                    new WriteExceptionError(ex);
+                    page = "ERROR : TimeOut";
+                }
                 
             }
             
@@ -115,15 +126,15 @@ namespace Pong.Communication
                     //request.Method = HttpMethod.Get;
                     break;
                 case TypeRequete.RequestMessage:
-                    requete = "GET /PTRE839/msgs?k=262168&timeout=5";
+                    requete = "GET /PTRE839/msgs?k=262166&timeout=5";
                   //  request.Method = HttpMethod.Get;
                     break;
                 case TypeRequete.SendMessage:
-                    requete = "POST /PTRE839/msgs?k=262166&to=262168&data=" + RetourneJsonMessage(DataAEnvoyer);
+                    requete = "POST /PTRE839/msgs?k=262166&to=262166&data=" + RetourneJsonMessage(DataAEnvoyer);
                     //request.Method = HttpMethod.Post;
                     break;
                 case TypeRequete.clear:
-                    requete = "DELETE /PTRE839/players/262168?k=262166";
+                    requete = "DELETE /PTRE839/players/262166?k=262166";
                     //request.Method = HttpMethod.Delete;
                     break;
                 default:

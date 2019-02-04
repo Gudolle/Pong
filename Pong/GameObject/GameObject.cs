@@ -27,17 +27,23 @@ namespace Pong.GameObject
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(
-                font, Latence.ToString(),
+                font, String.Format("Ping : {0} ms",Latence),
                 new Vector2(50,50),
                 Color.White, 0, fontOrigin, 1, SpriteEffects.None, 0);
             spriteBatch.End();
         }
-        public void DrawMessage(SpriteBatch spriteBatch, SpriteFont font, Vector2 fontOrigin, GameTime time)
+        public void DrawMessage(SpriteBatch spriteBatch, SpriteFont font, Vector2 fontOrigin, GameTime time, string Text)
         {
             string text = "En attende d'un autre joueur.";
-            for (int x = 0; x < i; x++){
-                text += ".";
+            if (String.IsNullOrEmpty(Text))
+            {
+                for (int x = 0; x < i; x++)
+                {
+                    text += ".";
+                }
             }
+            else
+                text = Text;
 
 
             spriteBatch.Begin();
