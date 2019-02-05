@@ -21,9 +21,15 @@ namespace Pong.Communication
         private object DataAEnvoyer;
         
         private string Host = "syllab.com";
+        private Mutex Wait { get; set; }
 
         private string BaseUri = "http://syllab.com/PTRE839";
         
+
+        public Request()
+        {
+            Wait = new Mutex();
+        }
 
         public int GetPing()
         {
@@ -73,7 +79,7 @@ namespace Pong.Communication
                 else
                     MonObject = JsonConvert.DeserializeObject<Data>(chaine);
             }
-            else if (MonJson.Contains("TimeOut") || MonJson.Contains("500 Server error") || MonJson.Contains("504 Gateway Timeout") || MonJson.Contains("503 Service Temporarily Unavailable"))
+            else if (MonJson.Contains("TimeOut") || MonJson.Contains("500 Server error") || MonJson.Contains("504 Gateway Timeout") || MonJson.Contains("503 Service Temporarily Unavailable") || MonJson.Contains("408 Request Time-out"))
                 return new RetourRequete(MonJson);
 
             return new RetourRequete(MonObject, MonJson);
@@ -88,9 +94,9 @@ namespace Pong.Communication
             using (Socket s = ConnectionSocket())
             {
                 //s.ReceiveTimeout = 5000;
-                s.NoDelay = true;
-                s.ReceiveBufferSize = 16384;
-                s.SendBufferSize = 16384;
+                //s.NoDelay = true;
+                //s.ReceiveBufferSize = 16384;
+                //s.SendBufferSize = 16384;
                 // Send request to the server.
                 s.Send(bytesSent, bytesSent.Length, 0);
                 
@@ -146,6 +152,16 @@ namespace Pong.Communication
             requete += " HTTP/1.1\r\nHost: " + Host + "\r\nContent-Length: 0\r\n\r\n";
             //request.RequestUri = new Uri(requete);
             return requete;
+        }
+
+
+        public void prendre()
+        {
+            Wait.WaitOne();
+        }
+        public void poser()
+        {
+            Wait.ReleaseMutex();
         }
 
         private string GetKey()

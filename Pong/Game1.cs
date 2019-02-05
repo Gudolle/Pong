@@ -157,48 +157,60 @@ namespace Pong
         {
             while (true)
             {
-                Request MonPing = new Request();
-                Latence = MonPing.GetPing();
-                Thread.Sleep(1000);
+                MesRequete.prendre();
+                Latence = MesRequete.GetPing();
+                MesRequete.poser();
             }
         }
         public void IsFirstPlayer()
         {
 
             RetourRequete result = new RetourRequete(string.Empty);
+
+            MesRequete.prendre();
             switch (joueur)
             {
                 case Joueur.Joueur1:
+
                     MesRequete.SocketSendReceive(TypeRequete.clear);
-                    while (!result.IsConnected)
-                    {
-                        MesRequete.SocketSendReceive(TypeRequete.clearAutre);
-                        result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
-                        MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_1" });
-                    }
-                    Text = "Joueur 1 : Pret";
+
+                    MesRequete.poser();
                     GetPosition.Start();
+                    //while (!result.IsConnected)
+                    //{
+                    //    MesRequete.SocketSendReceive(TypeRequete.clearAutre);
+                    //    MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_1" });
+                    //    result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
+                    //}
+                    Text = "Joueur 1 : Pret";
                     break;
                 case Joueur.Joueur2:
                     MesRequete.SocketSendReceive(TypeRequete.clear);
-                    while (!result.IsConnected)
-                    {
-                        MesRequete.SocketSendReceive(TypeRequete.clearAutre);
-                        result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
-                        MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_2" });
-                    }
-                    Text = "Joueur 2 : Pret";
+                    MesRequete.poser();
                     EnvoiePosition.Start();
+                    //while (!result.IsConnected)
+                    //{
+                    //    MesRequete.SocketSendReceive(TypeRequete.clearAutre);
+                    //    MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_2" });
+                    //    result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage);
+                    //}
+                    Text = "Joueur 2 : Pret";
                     break;
             }
             
         }
+        public void Spam()
+        {
+        }
+
 
         public void EnvoiePositionJ2()
         {
             while (true)
             {
+                MesRequete.prendre();
                 MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { X = Joueur1.Position.X, Y = Joueur1.Position.Y });
+                MesRequete.poser();
                 Thread.Sleep(10);
             }
         }
@@ -206,7 +218,9 @@ namespace Pong
         {
             while (true)
             {
+                MesRequete.prendre();
                 RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage, position: true);
+                MesRequete.poser();
                 if (result.IsConnected)
                 {
                     try
@@ -217,7 +231,8 @@ namespace Pong
                     }
                     catch { }
                 }
-                MesRequete.SocketSendReceive(TypeRequete.clear);
+                else
+                    MesRequete.SocketSendReceive(TypeRequete.clear);
             }
         }
     }
