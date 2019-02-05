@@ -41,8 +41,8 @@ namespace Pong
 
 
         public static Thread CreationParty;
-        public Thread GetPosition;
-        public Thread EnvoiePosition;
+        public Thread BoulotJ1thread;
+        public Thread BoulotJ2thread;
         public Thread MaLatence;
 
         public Game1()
@@ -70,8 +70,8 @@ namespace Pong
             MaLatence = new Thread(new ThreadStart(DrawPing));
             MaLatence.Start();
             CreationParty = new Thread(new ThreadStart(IsFirstPlayer));
-            GetPosition = new Thread(new ThreadStart(GetPositionJ2));
-            EnvoiePosition = new Thread(new ThreadStart(EnvoiePositionJ2));
+            BoulotJ1thread = new Thread(new ThreadStart(BoulotJ1));
+            BoulotJ2thread = new Thread(new ThreadStart(BoulotJ2));
 
         }
         
@@ -90,7 +90,7 @@ namespace Pong
             Joueur2.SetColor(Color.White);
             Ball.Texture = new Texture2D(graphics.GraphicsDevice, 15, 15);
             Ball.SetColor(Color.White);
-
+            Ball.Hidden = true;
 
 
             font = Content.Load<SpriteFont>("Font/File");
@@ -105,8 +105,8 @@ namespace Pong
         {
             MesRequete.SocketSendReceive(TypeRequete.clear);
             CreationParty.Abort();
-            EnvoiePosition.Abort();
-            GetPosition.Abort();
+            BoulotJ2thread.Abort();
+            BoulotJ1thread.Abort();
             MaLatence.Abort();
         }
 
@@ -157,9 +157,9 @@ namespace Pong
         {
             while (true)
             {
-                MesRequete.prendre();
-                Latence = MesRequete.GetPing();
-                MesRequete.poser();
+                //MesRequete.prendre();
+                //Latence = MesRequete.GetPing();
+                //MesRequete.poser();
             }
         }
         public void IsFirstPlayer()
@@ -175,7 +175,7 @@ namespace Pong
                     MesRequete.SocketSendReceive(TypeRequete.clear);
 
                     MesRequete.poser();
-                    GetPosition.Start();
+                    BoulotJ1thread.Start();
                     //while (!result.IsConnected)
                     //{
                     //    MesRequete.SocketSendReceive(TypeRequete.clearAutre);
@@ -187,7 +187,7 @@ namespace Pong
                 case Joueur.Joueur2:
                     MesRequete.SocketSendReceive(TypeRequete.clear);
                     MesRequete.poser();
-                    EnvoiePosition.Start();
+                    BoulotJ2thread.Start();
                     //while (!result.IsConnected)
                     //{
                     //    MesRequete.SocketSendReceive(TypeRequete.clearAutre);
@@ -204,22 +204,37 @@ namespace Pong
         }
 
 
-        public void EnvoiePositionJ2()
+        public void BoulotJ2()
         {
+            MesRequete.SocketSendReceive(TypeRequete.clear);
             while (true)
             {
                 MesRequete.prendre();
+                RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage, position: true);
                 MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { X = Joueur1.Position.X, Y = Joueur1.Position.Y });
                 MesRequete.poser();
-                Thread.Sleep(10);
+                if (result.IsConnected)
+                {
+                    try
+                    {
+                        result.Position.GenereJ2();
+
+                        Joueur2.Position = new Vector2(result.Position.information.joueur.X, result.Position.information.joueur.Y);
+                        Ball.Position = new Vector2(result.Position.information.balle.X, result.Position.information.balle.Y);
+                    }
+                    catch { }
+                }
+                else
+                    MesRequete.SocketSendReceive(TypeRequete.clear);
             }
         }
-        public void GetPositionJ2()
+        public void BoulotJ1()
         {
             while (true)
             {
                 MesRequete.prendre();
                 RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage, position: true);
+                MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { joueur = new { Joueur1.Position.X, Joueur1.Position.Y }, balle = new { Ball.Position.X, Ball.Position.Y } });
                 MesRequete.poser();
                 if (result.IsConnected)
                 {
