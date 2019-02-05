@@ -15,12 +15,16 @@ namespace Pong.GameObject
 
         public int i = 0;
         private TimeSpan now = new TimeSpan();
+        public bool Hidden = true;
          
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
-            spriteBatch.Draw(Texture, Position, Color.White);
-            spriteBatch.End();
+            if (!Hidden)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(Texture, Position, Color.White);
+                spriteBatch.End();
+            }
         }
 
         public void DrawLatence(SpriteBatch spriteBatch, int Latence, SpriteFont font, Vector2 fontOrigin)

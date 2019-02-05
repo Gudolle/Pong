@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json;
 using Pong.Communication;
 using Pong.GameObject;
 using Pong.Model;
@@ -20,13 +21,12 @@ namespace Pong
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        public Player Joueur1 { get; set; }
-        public Player Joueur2 { get; set; }
+        public static Player Joueur1 { get; set; }
+        public static Player Joueur2 { get; set; }
         public Balle Ball { get; set; }
         public int Latence { get; set; }
 
         public static string Text = "Appuyez sur C pour creer ou J pour rejoindre la partie";
-        public static Thread CreationParty;
         public bool IsReady = false;
 
         public static int WIDTH = 960;
@@ -38,6 +38,12 @@ namespace Pong
         public Request MesRequete = new Request();
 
         public SpriteFont font;
+
+
+        public static Thread CreationParty;
+        public Thread GetPosition;
+        public Thread EnvoiePosition;
+        public Thread MaLatence;
 
         public Game1()
         {
@@ -57,14 +63,15 @@ namespace Pong
         {
             // TODO: Add your initialization logic here
             Joueur1 = new Player();
+            Joueur2 = new Player();
             Ball = new Balle(HEIGHT, WIDTH);
             base.Initialize();
 
-
-            Thread MaLatence = new Thread(new ThreadStart(DrawPing));
+            MaLatence = new Thread(new ThreadStart(DrawPing));
             MaLatence.Start();
             CreationParty = new Thread(new ThreadStart(IsFirstPlayer));
-            
+            GetPosition = new Thread(new ThreadStart(GetPositionJ2));
+            EnvoiePosition = new Thread(new ThreadStart(EnvoiePositionJ2));
 
         }
         
@@ -78,6 +85,9 @@ namespace Pong
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Joueur1.Texture = new Texture2D(graphics.GraphicsDevice, 10, 60);
             Joueur1.SetColor(Color.White);
+
+            Joueur2.Texture = new Texture2D(graphics.GraphicsDevice, 10, 60);
+            Joueur2.SetColor(Color.White);
             Ball.Texture = new Texture2D(graphics.GraphicsDevice, 15, 15);
             Ball.SetColor(Color.White);
 
@@ -93,7 +103,11 @@ namespace Pong
         /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            MesRequete.SocketSendReceive(TypeRequete.clear);
+            CreationParty.Abort();
+            EnvoiePosition.Abort();
+            GetPosition.Abort();
+            MaLatence.Abort();
         }
 
         /// <summary>
@@ -125,6 +139,7 @@ namespace Pong
             
             GraphicsDevice.Clear(Color.Black);
             Joueur1.Draw(spriteBatch);
+            Joueur2.Draw(spriteBatch);
             Ball.Draw(spriteBatch);
             Basique.DrawLatence(spriteBatch, Latence, font, fontOrigin);
 
@@ -162,6 +177,7 @@ namespace Pong
                         MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_1" });
                     }
                     Text = "Joueur 1 : Pret";
+                    GetPosition.Start();
                     break;
                 case Joueur.Joueur2:
                     MesRequete.SocketSendReceive(TypeRequete.clear);
@@ -172,9 +188,37 @@ namespace Pong
                         MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { text = "Connection_Joueur_2" });
                     }
                     Text = "Joueur 2 : Pret";
+                    EnvoiePosition.Start();
                     break;
             }
             
+        }
+
+        public void EnvoiePositionJ2()
+        {
+            while (true)
+            {
+                MesRequete.SocketSendReceive(TypeRequete.SendMessage, new { X = Joueur1.Position.X, Y = Joueur1.Position.Y });
+                Thread.Sleep(10);
+            }
+        }
+        public void GetPositionJ2()
+        {
+            while (true)
+            {
+                RetourRequete result = MesRequete.SocketSendReceive(TypeRequete.RequestMessage, position: true);
+                if (result.IsConnected)
+                {
+                    try
+                    {
+                        result.Position.Genere();
+                        
+                        Joueur2.Position = new Vector2(result.Position.position.X, result.Position.position.Y);
+                    }
+                    catch { }
+                }
+                MesRequete.SocketSendReceive(TypeRequete.clear);
+            }
         }
     }
 

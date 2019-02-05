@@ -28,10 +28,15 @@ namespace Pong.Communication
         public int GetPing()
         {
             RetourRequete retour = SocketSendReceive(TypeRequete.Ping);
-            Ping Delay = retour.Ping;
-            Delay.t3 = GetUnixNow();
+            if (retour.IsConnected)
+            {
+                Ping Delay = retour.Ping;
+                Delay.t3 = GetUnixNow();
+
+                return Delay.RetourneLatence();
+            }
+            return 0;
             
-            return Delay.RetourneLatence();
         }
         private long GetUnixNow()
         {
@@ -43,7 +48,7 @@ namespace Pong.Communication
             return JsonConvert.SerializeObject(data);
         }
         
-        public RetourRequete SocketSendReceive(TypeRequete requete, object ObjetAEnvoyer = null)
+        public RetourRequete SocketSendReceive(TypeRequete requete, object ObjetAEnvoyer = null, bool position = false)
         {
             string MonJson = "";
             object MonObject = null;
@@ -59,13 +64,16 @@ namespace Pong.Communication
                 int IndexFin = (MonJson.LastIndexOf('}') + 1);
 
                 string chaine = MonJson.Substring(Index, IndexFin - Index);
+                chaine = chaine.Replace(@"\\", string.Empty);
 
-                if (requete == TypeRequete.Ping)
+                if (position)
+                    MonObject = JsonConvert.DeserializeObject<DataPosition>(chaine);
+                else if (requete == TypeRequete.Ping)
                     MonObject = JsonConvert.DeserializeObject<Ping>(chaine);
                 else
                     MonObject = JsonConvert.DeserializeObject<Data>(chaine);
             }
-            else if (MonJson.Contains("TimeOut") || MonJson.Contains("500 Server error") || MonJson.Contains("504 Gateway Timeout"))
+            else if (MonJson.Contains("TimeOut") || MonJson.Contains("500 Server error") || MonJson.Contains("504 Gateway Timeout") || MonJson.Contains("503 Service Temporarily Unavailable"))
                 return new RetourRequete(MonJson);
 
             return new RetourRequete(MonObject, MonJson);
@@ -79,12 +87,13 @@ namespace Pong.Communication
             string page = "";
             using (Socket s = ConnectionSocket())
             {
-                s.ReceiveTimeout = 5000;
+                //s.ReceiveTimeout = 5000;
                 s.NoDelay = true;
                 s.ReceiveBufferSize = 16384;
                 s.SendBufferSize = 16384;
                 // Send request to the server.
                 s.Send(bytesSent, bytesSent.Length, 0);
+                
 
                 // Receive the server home page content.
                 int bytes = 0;
@@ -122,7 +131,7 @@ namespace Pong.Communication
                     requete = "GET /PTRE839/msgs?k="+ GetKey() + "&timeout=5";
                     break;
                 case TypeRequete.SendMessage:
-                    requete = "POST /PTRE839/msgs?k="+ GetKey() + "&to="+ GetKeyJ2() + "&data=" + RetourneJsonMessage(DataAEnvoyer);
+                    requete = "POST /PTRE839/msgs?k=" + GetKey() + "&to=" + GetKeyJ2() + "&data=" + RetourneJsonMessage(DataAEnvoyer).Replace(" ", "%20");
                     break;
                 case TypeRequete.clear:
                     requete = "DELETE /PTRE839/players/"+ GetKey() + "?k=262166";
@@ -192,7 +201,6 @@ namespace Pong.Communication
         SendMessage,
         RequestMessage,
         clear,
-        clearAutre,
-        Start
+        clearAutre
     }
 }

@@ -11,6 +11,7 @@ namespace Pong.Model
         public bool IsConnected { get; set; }
         public Data Data { get; set; }
         public Ping Ping { get; set; }
+        public DataPosition Position { get; set; }
         public string page { get; set; }
         public Joueur joueur { get; set; }
 
@@ -30,6 +31,8 @@ namespace Pong.Model
                 {
                     Ping = (Ping)MonObjet;
                 }
+                else if (MonObjet.GetType().Name == "DataPosition")
+                    Position = (DataPosition)MonObjet;
             }
         }
         public RetourRequete(string _page)

@@ -38,6 +38,9 @@ namespace Pong.GameObject
                 Game1.Text = "En attende du joueur 2";
                 Game1.CreationParty.Start();
                 Position = new Vector2(10, (Game1.HEIGHT / 2 - 30));
+                Game1.Joueur2.Position = new Vector2(Game1.WIDTH - 20, (Game1.HEIGHT / 2 - 30));
+                Game1.Joueur2.Hidden = false;
+                Hidden = false;
             }
             if (state.IsKeyDown(Keys.J))
             {
@@ -46,6 +49,9 @@ namespace Pong.GameObject
                 Game1.Text = "En attende du joueur 1";
                 Game1.CreationParty.Start();
                 Position = new Vector2(Game1.WIDTH-20, (Game1.HEIGHT / 2 - 30));
+                Game1.Joueur2.Position = new Vector2(10, (Game1.HEIGHT / 2 - 30));
+                Game1.Joueur2.Hidden = false;
+                Hidden = false;
             }
         }
    
